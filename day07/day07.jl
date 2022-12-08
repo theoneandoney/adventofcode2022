@@ -1,98 +1,93 @@
 # day07 of AOC 2022
-cd("../day07")
-# cd("./day07")
+# cd("../day07")
+cd("./day07")
 include("../aoc.jl")
 
 
-# input_loc = "day07_input.txt"
-input_loc = "day07_test.txt"
-
+input_loc = "day07_input.txt"
+# input_loc = "day07_test.txt"
 data = import_strings(input_loc)
 
 
 
-# part 1
-# Need to build a map of the filesystem given the input, determine 
-# the total size of each directory, then sum the total size of all
-# directories greater than 100,000
-struct File
+mutable struct Node
+  children::Vector{Node}
+  parent::Union{Node, Nothing}
+  weigth::Int
   name::String
-  size::Int
-  parent::String
 end
 
-struct Directory
-  name::String
-  size::Int
-  subdirs::Array{String, 1}
-  files::Array{String, 1}
-  parent::String
-end
+function create_tree(filename)::Node
+  root = Node([], nothing, 0, "root")
+  current_node = root
 
-
-
-
-test = data[2]
-
-
-dirs = [Directory("/", 0, [], [])]
-
-current_dir = dirs[1]
-# current_loc = 1
-
-if test[1] == '$'
-  # new command
-  cmd = test[3:end]
-  if cmd[1:3] == "cd "
-    # change directory
-    dir = cmd[4:end]
-    if dir == ".."
-      # go up one directory
-      current_loc = current_dir.parent
-      current_dir = dirs[current_loc]
-    else
-      # go down one directory
-      for i in 1:length(current_dir.subdirs)
-        if current_dir.subdirs[i].name == dir
-          current_loc = i
-          current_dir = current_dir.subdirs[i]
-          break
-        end
+  for line in readlines(filename)
+      if line[1] == '$'
+          if line[3:4] == "cd"
+              dir = line[6:end]
+              if dir == "/"
+                  current_node = root
+              elseif dir == ".."
+                  current_node = current_node.parent
+              else
+                  node = Node([], current_node, 0, dir)
+                  push!(current_node.children, node)
+                  current_node = node
+              end
+          end
+      else
+          if line[1:3] == "dir"
+              continue
+          else
+              filesize = parse(Int, split(line, " ")[1])
+              current_node.weigth += filesize
+          end
       end
-    end
-  # elseif cmd[1:3] == "ls "
-
   end
 
-else
-  # still printing
+  return root
+end
+
+function get_total_size(root::Node)
+  if length(root.children) == 0
+      return root.weigth
+  end
+
+  weight = root.weigth
+  for child in root.children
+      weight += get_total_size(child)
+  end
+
+  return weight
+end
+
+function solution(root::Node)::Tuple{Int, Int}
+  directories_size = Vector{Int}()
+  total_disk_size = 70000000
+  update_size = 30000000
+
+  stack = [root]
+  while !isempty(stack)
+      node = pop!(stack)
+      node_size = get_total_size(node)
+      push!(directories_size, node_size)
+
+      for child in node.children
+          push!(stack, child)
+      end
+  end
+
+  part1 = sum([d for d in directories_size if d < 100000])
+
+  used_size = maximum(directories_size)
+  needed = update_size - (total_disk_size - used_size)
+  part2 = minimum([d for d in directories_size if d > needed])
   
-
+  return part1, part2
 end
 
-dir
-cmd
 
-
-
-
-
-function parse_line(line)
-end
-
-line = data[3]
-
-
-if line[1:3] == "dir"
-  # new directory
-  dir = line[5:end]
-  # add to current directory
-  push!(current_dir.subdirs, Directory(dir, 0, [], []))
-  # add to list of directories
-  push!(dirs, Directory(dir, 0, [], []))
-else
-  # new file
-  size, name = split(line, " ")
-  # add to current directory
-  push!(current_dir.files, File(name, parse(Int, size), []))
-end
+root = create_tree(input_loc)
+part1, part2 = solution(root)
+println("Solution part 1: ", part1)
+println("Solution part 2: ", part2)
