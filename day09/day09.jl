@@ -1,151 +1,79 @@
-# day09 of AOC 2022
-cd("./day09")
-# cd("../day09")
-include("../aoc.jl")
+module Day9
 
-# input_loc = "day09_input.txt"
-input_loc = "day09_test.txt"
+# https://adventofcode.com/2022/day/9
 
-data = import_strings(input_loc)
+include("./../aoc.jl")
+
+using .AOC
 
 struct Motion
-  direction::Char
-  distance::Int
+    direction::Vector{Int}
+    distance::Int
 end
 
-struct Coord
-  x::Int
-  y::Int
+const Direction = Dict(
+    "U" => [1, 0],
+    "D" => [-1, 0],
+    "L" => [0, -1],
+    "R" => [0, 1],
+)
+
+function AOC.processinput(data)
+    data = split.(split(data, '\n'))
+    map(m -> Motion(Direction[m[1]], parse(Int, m[2])), data)
 end
 
-function parse_motion(str)
-  return Motion(str[1], parse(Int, str[2:end]))
+function movetail(headposition, tailposition)
+    direction = headposition - tailposition
+    distance = abs.(direction)
+    (distance[1] <= 1) && (distance[2] <= 1) && return tailposition
+    (distance[1] + distance[2]) in [2,4] && return tailposition + div.(direction, 2)
+    return tailposition + sign.(direction) 
 end
 
-function get_motions(data)
-  motions = []
-  for i in 1:length(data)
-    push!(motions, parse_motion(data[i]))
-  end
-  return motions
-end
-
-function tail_relative_to_head(tail, head)
-  return Coord(tail.x - head.x, tail.y - head.y)
-end
-
-function tail_left(tail, head)
-  if tail_relative_to_head(tail, head).x == -1
-    return true
-  else
-    return false
-  end
-end
-
-function tail_down(tail, head)
-  if tail_relative_to_head(tail, head).y == -1
-    return true
-  else
-    return false
-  end
-end
-
-function tail_within_one(tail, head)
-  @match tail_relative_to_head(tail, head) begin
-    Coord(1,0) => true
-    Coord(0,1) => true
-    Coord(-1,0) => true
-    Coord(0,-1) => true
-    Coord(0, 0) => true
-    _ => false
-  end
-end
-
-function update_tail_history(tail, tail_history)
-  push!(tail_history, tail)
-end
-
-function move_right(head, tail, distance)
-  println(tail_left)
-  for i in 1:distance
-    if tail_left(tail, head) == false  || tail.x == head.x
-      head = Coord(head.x + 1, head.y)
-      tail = tail
-      update_tail_history(tail, tail_history)
-    else
-      head = Coord(head.x + 1, head.y)
-      tail = Coord(tail.x + 1, head.y) # head.y accounts for potential diagonal movement
-      update_tail_history(tail, tail_history)
+function moverope!(tailpositions, rope, motion)
+    foreach(1:motion.distance) do _
+        rope[1] += motion.direction
+        foreach(i -> rope[i+1] = movetail(rope[i], rope[i+1]), 1:length(rope)-1)
+        push!(tailpositions, rope[end])
     end
-  end
-  return head, tail
 end
 
-function move_left(head, tail, distance)
-  for i in 1:distance
-    if tail_left(tail, head) == true || tail.x == head.x
-      head = Coord(head.x - 1, head.y)
-      tail = tail
-      update_tail_history(tail, tail_history)
-    else
-      head = Coord(head.x - 1, head.y)
-      tail = Coord(tail.x - 1, head.y) # head.y accounts for potential diagonal movement
-      update_tail_history(tail, tail_history)
-    end
-  end
-  return head, tail
+function moverope(rope, motionlist)
+    tailpositions = [[0,0]]
+    foreach(m -> moverope!(tailpositions, rope, m), motionlist)
+    length(unique(tailpositions))
 end
 
-function move_up(head, tail, distance)
-  for i in 1:distance
-    if tail_down(tail, head) == false || tail.y == head.y
-      head = Coord(head.x, head.y + 1)
-      tail = tail
-      update_tail_history(tail, tail_history)
-    else
-      head = Coord(head.x, head.y + 1)
-      tail = Coord(head.x, tail.y + 1) # head.x accounts for potential diagonal movement
-      update_tail_history(tail, tail_history)
-    end
-  end
-  return head, tail
+function solvepart1(motionlist)
+    rope = [[0, 0] for i in 1:2]
+    moverope(rope, motionlist)
 end
 
-function move_down(head, tail, distance)
-  for i in 1:distance
-    if tail_down(tail, head) == true || tail.y == head.y
-      head = Coord(head.x, head.y - 1)
-      tail = tail
-      update_tail_history(tail, tail_history)
-    else
-      head = Coord(head.x, head.y - 1)
-      tail = Coord(head.x, tail.y - 1) # head.x accounts for potential diagonal movement
-      update_tail_history(tail, tail_history)
-    end
-  end
-  return head, tail
+function solvepart2(motionlist)
+    rope = [[0, 0] for i in 1:10]
+    moverope(rope, motionlist)
 end
 
+puzzles = [
+    Puzzle(09, "test 1", "day09-input.txt", solvepart1, 12),
+    # Puzzle(9, "solve 1", solvepart1, 6044),
+    # Puzzle(9, "test 2a", "input-test1.txt", solvepart2, 1),
+    # Puzzle(9, "test 2b", "input-test2.txt", solvepart2, 36),
+    # Puzzle(9, "deel 2", solvepart2, 2384)
+]
+
+printresults(puzzles)
 
 
-# part 1
-motions = get_motions(data)
-head = Coord(0,0)
-tail = Coord(0,0)
-tail_history = []
-update_tail_history(tail, tail_history)
-
-for m in 1:length(motions)
-  head, tail = @match motions[m] begin
-    Motion('U', distance) => move_up(head, tail, distance)
-    Motion('D', distance) => move_down(head, tail, distance)
-    Motion('L', distance) => move_left(head, tail, distance)
-    Motion('R', distance) => move_right(head, tail, distance)
-  end
-end
-
-solution1 = length(unique(tail_history))
-println("The solution to part 1 is: $solution1")
+AOC.solve(puzzles[1])
 
 
-# part 2
+
+input = AOC.processinput(read("day09_input.txt", String))
+answer = solvepart2(input)
+
+
+
+
+end # module
