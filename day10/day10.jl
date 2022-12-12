@@ -7,8 +7,8 @@ cd("./day10/")
 using .AOC
 # cd("./day10/")
 
-data_loc = "day10_test.txt"
-# data_loc = "day10_input.txt"
+# data_loc = "day10_test.txt"
+data_loc = "day10_input.txt"
 data = AOC.import_strings(data_loc)
 
 
@@ -98,24 +98,28 @@ solution_pt1 = (20 * cycle20) + (60 * cycle60) + (100 * cycle100) + (140 * cycle
 registers
 sprite = []
 crt_out = DataFrame(fill(".", 6, 40), :auto)
+cycle = 0
 
 for i in 1:2:length(registers)
-  cycle = i
-  if registers[i][3] == cycle
+  cycle = Int((i + 1)/2)%40
+  if registers[i][3] <= cycle && registers[i][3] >= cycle - 2
     push!(sprite, "#")
-  elseif registers[i][3] + 1 == cycle
-    push!(sprite, "#")
-  elseif registers[i][3] - 1 == cycle
-    push!(sprite, "#")
+  # elseif registers[i][3] == cycle - 1
+  #   push!(sprite, "#")
+  # elseif registers[i][3] == cycle - 2
+  #   push!(sprite, "#")
   else
     push!(sprite, ".")
   end
-  # println(registers[i][3], " ", i)
+  println(registers[i], " ", cycle)
 end
 
 println(sprite[1:40])
 println(sprite[41:80])
 println(sprite[81:120])
+println(sprite[121:160])
+println(sprite[161:200])
+println(sprite[201:240])
 
 crt_out[1, 1:40] = sprite[1:40]
 crt_out[2, 1:40] = sprite[41:80]
@@ -126,6 +130,5 @@ crt_out[6, 1:40] = sprite[201:240]
 
 
 crt_out
-
 
 
