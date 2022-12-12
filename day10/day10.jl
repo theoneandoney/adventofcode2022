@@ -6,8 +6,8 @@ include("../aoc.jl")
 using .AOC
 # cd("./day10/")
 
-# data_loc = "day10_test.txt"
-data_loc = "day10_input.txt"
+data_loc = "day10_test.txt"
+# data_loc = "day10_input.txt"
 data = AOC.import_strings(data_loc)
 
 
@@ -72,3 +72,28 @@ cycle180 = registers[360][3]
 cycle220 = registers[440][3]
 
 solution_pt1 = (20 * cycle20) + (60 * cycle60) + (100 * cycle100) + (140 * cycle140) + (180 * cycle180) + (220 * cycle220)
+
+
+
+
+
+
+
+# part 2
+
+# Like the CPU, the CRT is tied closely to the clock circuit: the CRT 
+# draws a single pixel during each cycle. Representing each pixel of 
+# the screen as a #, here are the cycles during which the first and 
+# last pixel in each row are drawn:
+
+# Cycle   1 -> ######################################## <- Cycle  40
+# Cycle  41 -> ######################################## <- Cycle  80
+# Cycle  81 -> ######################################## <- Cycle 120
+# Cycle 121 -> ######################################## <- Cycle 160
+# Cycle 161 -> ######################################## <- Cycle 200
+# Cycle 201 -> ######################################## <- Cycle 240
+
+
+registers
+
+
