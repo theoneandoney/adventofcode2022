@@ -2,6 +2,7 @@
 
 # include("./../aocimproved.jl")
 include("../aoc.jl")
+cd("./day10/")
 
 using .AOC
 # cd("./day10/")
@@ -95,5 +96,36 @@ solution_pt1 = (20 * cycle20) + (60 * cycle60) + (100 * cycle100) + (140 * cycle
 
 
 registers
+sprite = []
+crt_out = DataFrame(fill(".", 6, 40), :auto)
+
+for i in 1:2:length(registers)
+  cycle = i
+  if registers[i][3] == cycle
+    push!(sprite, "#")
+  elseif registers[i][3] + 1 == cycle
+    push!(sprite, "#")
+  elseif registers[i][3] - 1 == cycle
+    push!(sprite, "#")
+  else
+    push!(sprite, ".")
+  end
+  # println(registers[i][3], " ", i)
+end
+
+println(sprite[1:40])
+println(sprite[41:80])
+println(sprite[81:120])
+
+crt_out[1, 1:40] = sprite[1:40]
+crt_out[2, 1:40] = sprite[41:80]
+crt_out[3, 1:40] = sprite[81:120]
+crt_out[4, 1:40] = sprite[121:160]
+crt_out[5, 1:40] = sprite[161:200]
+crt_out[6, 1:40] = sprite[201:240]
+
+
+crt_out
+
 
 
