@@ -42,10 +42,10 @@ function import_strings(input_loc)
     end
 end
 
-function import_df(input_loc)
-    # import the input as a dataframe
-    df = CSV.read(input_loc, delim = " ", header = false, DataFrame)
-end
+# function import_df(input_loc)
+#     # import the input as a dataframe
+#     df = CSV.read(input_loc, delim = " ", header = false, DataFrame)
+# end
 function colorize(str, colorcode)
     "\e[$(colorcode)m$(str)\e[0m"
 end
